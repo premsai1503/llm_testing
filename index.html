@@ -1,0 +1,128 @@
+<!--
+To run this example locally on Windows 11:
+1. Clone whisper.cpp and build the WebAssembly port:
+   ```bash
+   git clone https://github.com/ggerganov/whisper.cpp.git
+   cd whisper.cpp
+   mkdir build && cd build
+   emcmake cmake .. -DWEB=ON
+   emmake make -j4
+   ```
+2. Copy `whisper.cpp.js` and `whisper.cpp.wasm` from `build/bin/` into this folder.
+3. Download a ggml model (e.g. `ggml-base.en.bin`) and rename it to `model.bin`, placing it here.
+4. Serve this folder over HTTP (e.g. `npx http-server .`) and open `http://localhost:8080`.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Whisper.cpp WASM Speech Recognition</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #controls { margin-bottom: 20px; }
+    button { padding: 10px 20px; margin: 0 10px; font-size: 16px; }
+    #transcript { white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; min-height: 100px; }
+    #status { margin-bottom: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Whisper.cpp WASM Speech Recognition</h1>
+  <div id="controls">
+    <button id="recordBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop Recording</button>
+  </div>
+  <div id="status">Status: Idle</div>
+  <pre id="transcript"></pre>
+
+  <!-- whisper.cpp WebAssembly loader -->
+  <script src="whisper.cpp.js"></script>
+  <script>
+    let recorder, audioChunks;
+    let whisperModule;
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn   = document.getElementById('stopBtn');
+    const statusDiv = document.getElementById('status');
+    const transcriptEl = document.getElementById('transcript');
+
+    async function init() {
+      statusDiv.textContent = 'Status: Loading model...';
+      whisperModule = await createWhisperModule();
+      console.log('WASM module loaded');
+
+      // Fetch model
+      const res = await fetch('model.bin');
+      const buf = await res.arrayBuffer();
+      const size = buf.byteLength;
+
+      // Allocate and copy
+      const modelPtr = whisperModule._malloc(size);
+      whisperModule.HEAPU8.set(new Uint8Array(buf), modelPtr);
+
+      // Initialize context
+      const ctx = whisperModule._whisper_init(modelPtr, size);
+      whisperModule._ctx = ctx;
+      statusDiv.textContent = 'Status: Ready';
+    }
+
+    async function convertToPCM(buffer) {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const decoded = await audioCtx.decodeAudioData(buffer);
+      const offline = new OfflineAudioContext(1, decoded.duration * 16000, 16000);
+      const src = offline.createBufferSource();
+      src.buffer = decoded;
+      src.connect(offline.destination);
+      src.start();
+      const rendered = await offline.startRendering();
+      const data = rendered.getChannelData(0);
+      const int16 = new Int16Array(data.length);
+      for (let i = 0; i < data.length; i++) {
+        let s = Math.max(-1, Math.min(1, data[i]));
+        int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return int16;
+    }
+
+    recordBtn.onclick = async () => {
+      audioChunks = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = e => audioChunks.push(e.data);
+      recorder.onstop = handleStop;
+      recorder.start();
+      statusDiv.textContent = 'Status: Recording...';
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      recorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusDiv.textContent = 'Status: Processing...';
+    };
+
+    async function handleStop() {
+      const blob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
+      const arrayBuffer = await blob.arrayBuffer();
+      const pcm = await convertToPCM(arrayBuffer);
+
+      // Allocate PCM in WASM
+      const pcmBytes = pcm.length * 2;
+      const pcmPtr = whisperModule._malloc(pcmBytes);
+      whisperModule.HEAP16.set(pcm, pcmPtr >> 1);
+
+      // Run transcription
+      whisperModule._whisper_full(whisperModule._ctx, /*n_threads=*/4, pcmPtr, pcm.length);
+      const txtPtr = whisperModule._whisper_print_segments(whisperModule._ctx);
+      const result = whisperModule.UTF8ToString(txtPtr);
+      transcriptEl.textContent = result;
+      statusDiv.textContent = 'Status: Done';
+
+      // Free PCM
+      whisperModule._free(pcmPtr);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
