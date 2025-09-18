@@ -1,0 +1,59 @@
+import json
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+import jwt  # pip install pyjwt cryptography
+
+def generate_and_sign_json(json_data):
+"""
+  The generate_and_sign_json(json_data) function securely packages a Python dictionary (JSON object) as a signed message for authenticated remote communication. 
+  It generates a new RSA key pair in memory, serializes both private and public keys in PEM format, 
+  and uses the private key to sign the input dictionary as a JWT (JSON Web Token) using the RS256 (RSA + SHA-256) signature algorithm.
+
+    Args:
+        json_data: Python dictionary representing the message payload.
+
+    Outputs:
+        Dictionary containing:
+            jwt_message: A string JWT with the signed payload, suitable for transmission.
+            public_key: The PEM-format RSA public key for signature verification by remote agents.
+
+  Usage:
+    This tool is designed to facilitate secure transmission of structured data by generating and signing JWT tokens. 
+    Receiving agents can verify message integrity and authenticity using the included public key before processing the payload
+"""
+    # Generate RSA key pair
+    private_key_obj = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048
+    )
+
+    # Serialize keys to PEM format
+    private_key = private_key_obj.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    public_key = private_key_obj.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    # Encode data as JWT signed with RS256
+    payload = json_data  # Should be a dict
+    token = jwt.encode(payload, private_key, algorithm='RS256')
+
+    return {
+        "jwt_message": token,
+        "public_key": public_key.decode("utf-8")
+    }
+
+# Example usage:
+json_data = {
+    "user": "alice",
+    "action": "login",
+    "timestamp": 1631806000
+}
+result = generate_and_sign_json(json_data)
+print(str(result))
+# print("JWT:", result["jwt_message"])
+# print("Public Key (send for verification):\n", result["public_key"])
