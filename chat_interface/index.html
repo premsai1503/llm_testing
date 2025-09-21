@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wells-Fargo Styled Chat Interface</title>
+  <style>
+    /* Wells Fargo inspired colors */
+    :root {
+        --wf-red: #b31b1b;
+        --wf-gold: #ffd700;
+        --wf-white: #fff;
+        --wf-gray: #f5f5f5;
+        --wf-dark-gray: #333;
+        --max-width: 100%;
+    }
+    * { box-sizing: border-box; }
+    html,body { height: 100%; }
+    body {
+        background: linear-gradient(180deg, #fafafa 0%, var(--wf-gray) 100%);
+        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+        margin: 0; padding: 24px; display: flex; align-items: center; justify-content: center;
+        -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+      width: max(100%, var(--max-width));
+      height: calc(100vh - 48px);
+    }
+
+    /* left column: simple nav */
+    .sidebar {
+      background: var(--wf-white);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      display:flex; flex-direction:column; gap:12px; overflow:auto;
+    }
+    .new-chat-sidebar {
+      background: var(--wf-red);
+      color: var(--wf-white);
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      transition: background-color 0.2s;
+    }
+    .new-chat-sidebar:hover {
+      background: #8e1515;
+    }
+    .conversations { margin-top:8px; display:flex; flex-direction:column; gap:8px; }
+    .conv { 
+      position: relative;
+      padding: 10px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 0.95rem; 
+      color: var(--wf-dark-gray); 
+      border: 1px solid transparent; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .conv:hover { background:#fff7e0; border-color:#ffeab0; }
+    .conv.active { 
+      background: #fff7e0; 
+      border-color: var(--wf-gold);
+      font-weight: 600;
+    }
+    
+    .conv-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 10px;
+    }
+    
+    .delete-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .delete-btn:hover {
+      color: var(--wf-red);
+      background: rgba(179, 27, 27, 0.1);
+    }
+    
+    .conv:hover .delete-btn {
+      display: block;
+    }
+
+    /* main chat container */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: var(--wf-white);
+        border-radius: 12px;
+        box-shadow: 0 6px 28px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .chat-header {
+        background: var(--wf-red);
+        color: var(--wf-white);
+        padding: 18px 24px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+        border-bottom: 3px solid var(--wf-gold);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .agent-name { font-size:1.05rem }
+    .header-actions { display:flex; gap:8px; align-items:center }
+
+    .chat-messages {
+        flex: 1;
+        padding: 22px;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .message-row { display:flex; gap:12px; align-items:flex-end; max-width:100%; }
+    .message {
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        word-break: break-word;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .message.user { align-self: flex-end; background: var(--wf-gold); color: var(--wf-dark-gray); border-bottom-right-radius:6px; }
+    .message.agent { align-self: flex-start; background: var(--wf-white); color: var(--wf-dark-gray); border:1px solid #e9e9e9; border-bottom-left-radius:6px; }
+    .meta { font-size:0.78rem; color:#6b6b6b; margin-top:6px; }
+    .avatar { 
+        width: 34px; 
+        height: 34px; 
+        border-radius: 8px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+
+    .chat-input-area {
+        display: flex; align-items: center; padding: 14px 18px; background: var(--wf-white); border-top: 1px solid #e9e9e9;
+        gap:12px;
+    }
+    .chat-input {
+        flex: 1; padding: 12px 14px; border: 1px solid #d0d0d0; border-radius: 20px; font-size: 1rem; outline: none; min-height:44px; max-height:160px; overflow:auto;
+    }
+    .chat-input:focus { border: 1.5px solid var(--wf-red); }
+    .send-btn { background: var(--wf-red); border: none; color: var(--wf-white); border-radius: 50%; width: 44px; height: 44px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .12s ease; }
+    .send-btn:active { transform:scale(.96); }
+    .send-icon { width:20px; height:20px; fill:var(--wf-white); }
+
+    .new-chat-btn {
+      background: transparent;
+      border: 1px solid var(--wf-white);
+      color: var(--wf-white);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .new-chat-btn:hover {
+      background: var(--wf-white);
+      color: var(--wf-red);
+    }
+
+    /* small screens */
+    @media (max-width:880px) {
+      .app-shell { grid-template-columns: 1fr; height: calc(100vh - 32px); }
+      .sidebar { display:none; }
+      body { padding:12px }
+    }
+
+    /* subtle typing indicator */
+    .typing { display:inline-block; width:46px; height:18px; background:transparent; }
+    .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#cfcfcf; margin:0 4px; animation: blink 1.2s infinite; }
+    .dot:nth-child(2){ animation-delay:.15s } .dot:nth-child(3){ animation-delay:.3s }
+    @keyframes blink { 0%{opacity:0.25}50%{opacity:1}100%{opacity:.25} }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Replace the sidebar content -->
+    <aside class="sidebar" aria-label="Conversations">
+      <div class="new-chat-sidebar" id="sidebarNewChatBtn">New Chat</div>
+      <div class="conversations" id="conversationsList">
+        <!-- Sessions will be added here -->
+      </div>
+      <div style="margin-top:auto; font-size:.85rem; color:#777">Built with google-adk + Runner</div>
+    </aside>
+
+    <main class="chat-container" role="main">
+      <header class="chat-header">
+        <div class="header-left">
+          <div style="width:40px;height:40px;border-radius:6px;background:var(--wf-white);display:flex;align-items:center;justify-content:center;color:var(--wf-red);font-weight:700">AI</div>
+          <div>
+            <div class="agent-name">WF Line of Credit Assistant</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="headerNewChatBtn" title="New chat" aria-label="new chat" style="background:transparent;border:none;color:var(--wf-white);cursor:pointer">New</button>
+        </div>
+      </header>
+
+      <section class="chat-messages" id="chatMessages" aria-live="polite"></section>
+
+      <div class="chat-input-area">
+        <div id="input" class="chat-input" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Type your message"></div>
+        <button id="sendBtn" class="send-btn" title="Send message" aria-label="Send">
+          <svg class="send-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Update button references
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const messagesEl = document.getElementById('chatMessages');
+    const headerNewChatBtn = document.getElementById('headerNewChatBtn');
+    const sidebarNewChatBtn = document.getElementById('sidebarNewChatBtn');
+    const conversationsList = document.getElementById('conversationsList');
+
+    // Chat session management
+    class ChatSession {
+        constructor(firstMessage) {
+            this.id = Date.now().toString();
+            this.name = firstMessage.substring(0, 15) + (firstMessage.length > 15 ? '...' : '');
+            this.messages = [];
+            this.createdAt = new Date();
+        }
+
+        addMessage(text, sender) {
+            this.messages.push({
+                text,
+                sender,
+                timestamp: new Date()
+            });
+        }
+    }
+
+    class ChatSessionManager {
+        constructor() {
+            this.sessions = [];
+            this.loadFromStorage();
+        }
+
+        createSession(firstMessage) {
+            const session = new ChatSession(firstMessage);
+            this.sessions.push(session);
+            this.saveToStorage();
+            return session;
+        }
+
+        getSessionById(id) {
+            return this.sessions.find(session => session.id === id);
+        }
+
+        deleteSession(id) {
+            const index = this.sessions.findIndex(session => session.id === id);
+            if (index !== -1) {
+                this.sessions.splice(index, 1);
+                this.saveToStorage();
+            }
+            return this.sessions;
+        }
+
+        saveToStorage() {
+            localStorage.setItem('chatSessions', JSON.stringify(this.sessions));
+        }
+
+        loadFromStorage() {
+            const saved = localStorage.getItem('chatSessions');
+            if (saved) {
+                try {
+                    this.sessions = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading sessions from storage:', e);
+                    this.sessions = [];
+                }
+            }
+        }
+    }
+
+    let currentSession = null;
+    const sessionManager = new ChatSessionManager();
+
+    // Utility to append a message
+    function addMessage(role, htmlContent, opts = {}){
+        const row = document.createElement('div');
+        row.className = 'message-row';
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.style.background = role === 'user' ? 'rgb(203 53 63)' : '#f3f3f3';
+        avatar.style.color = role === 'user' ? 'white' : 'rgb(203 53 63)';
+        avatar.textContent = role === 'user' ? 'You' : 'AI';
+
+        const msg = document.createElement('div');
+        msg.className = 'message ' + (role === 'user' ? 'user' : 'agent');
+        msg.innerHTML = htmlContent;
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const ts = new Date();
+        meta.textContent = ts.toLocaleTimeString();
+
+        if(role === 'user') row.style.justifyContent = 'flex-end';
+
+        row.appendChild(role === 'user' ? msg : avatar);
+        row.appendChild(role === 'user' ? avatar : msg);
+        msg.appendChild(meta);
+
+        messagesEl.appendChild(row);
+        messagesEl.scrollTop = messagesEl.scrollHeight - messagesEl.clientHeight;
+        return { row, msg };
+    }
+
+    function escapeHtml(s){ 
+        return s.replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/\n/g,'<br/>'); 
+    }
+
+    // Add session to sidebar
+    function addSessionToSidebar(session) {
+        const convEl = document.createElement('div');
+        convEl.className = 'conv';
+        convEl.dataset.sessionId = session.id;
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'conv-title';
+        titleSpan.textContent = session.name;
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '✕';
+        deleteBtn.title = 'Delete conversation';
+        
+        convEl.appendChild(titleSpan);
+        convEl.appendChild(deleteBtn);
+        
+        convEl.addEventListener('click', (e) => {
+            // Only switch session if not clicking the delete button
+            if (!e.target.classList.contains('delete-btn')) {
+                switchToSession(session.id);
+            }
+        });
+        
+        // Add delete functionality
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteSession(session.id);
+        });
+        
+        conversationsList.appendChild(convEl);
+        return convEl;
+    }
+
+    // Delete a session
+    function deleteSession(sessionId) {
+        // If we're deleting the current session, clear the chat
+        if (currentSession && currentSession.id === sessionId) {
+            messagesEl.innerHTML = '';
+            currentSession = null;
+        }
+        
+        // Remove from session manager
+        sessionManager.deleteSession(sessionId);
+        
+        // Remove from UI - fixed selector
+        const sessionEl = document.querySelector(`.conv[data-session-id="${sessionId}"]`);
+        if (sessionEl) {
+            sessionEl.remove();
+        }
+    }
+
+    // Switch to a specific session
+    function switchToSession(sessionId) {
+        // Save current session if exists
+        if (currentSession) {
+            sessionManager.saveToStorage();
+        }
+        
+        // Clear messages
+        messagesEl.innerHTML = '';
+        
+        // Find and set the new session
+        currentSession = sessionManager.getSessionById(sessionId);
+        
+        if (currentSession) {
+            // Highlight active session
+            document.querySelectorAll('.conv').forEach(conv => {
+                if (conv.dataset.sessionId === sessionId) {
+                    conv.classList.add('active');
+                } else {
+                    conv.classList.remove('active');
+                }
+            });
+            
+            // Load messages
+            currentSession.messages.forEach(msg => {
+                addMessage(msg.sender, escapeHtml(msg.text));
+            });
+        }
+    }
+
+    // Start a new chat session
+    function startNewChat() {
+        // Save current session if exists
+        if (currentSession) {
+            sessionManager.saveToStorage();
+        }
+        
+        // Clear messages and input
+        messagesEl.innerHTML = '';
+        inputEl.innerHTML = '';
+        
+        // Reset current session
+        currentSession = null;
+        
+        // Remove active class from all conversations
+        document.querySelectorAll('.conv').forEach(conv => {
+            conv.classList.remove('active');
+        });
+    }
+
+    // send message to backend
+    async function sendToBackend(text, sessionId) {
+        const endpoint = 'http://localhost:8000/api/chat/';
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    message: text, 
+                    session_id: sessionId ? sessionId : null 
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return {
+                reply: data.reply,
+                session_id: data.session_id
+            };
+        } catch(e) {
+            console.error('Backend error:', e);
+            return {
+                reply: `Error communicating with backend: ${e.message}`,
+                session_id: sessionId
+            };
+        }
+    }
+
+    // UI helpers to manage streaming message element
+    let currentStreamingMsg = null;
+    function startStreaming(){
+        const {msg} = addMessage('agent','<em>...</em>');
+        currentStreamingMsg = msg;
+    }
+    function updateStreaming(text){
+        if(!currentStreamingMsg) startStreaming();
+        // keep meta at bottom
+        const meta = currentStreamingMsg.querySelector('.meta');
+        currentStreamingMsg.innerHTML = escapeHtml(text);
+        if(meta) currentStreamingMsg.appendChild(meta);
+        messagesEl.scrollTop = messagesEl.scrollHeight - messagesEl.clientHeight;
+    }
+    function finishStreaming(finalText){
+        updateStreaming(finalText);
+        currentStreamingMsg = null;
+    }
+
+    // Handle sending messages
+    async function handleSend(){
+        // Get text from contenteditable div
+        const text = inputEl.innerText.trim();
+        if(!text) return;
+        
+        // Create new session if this is the first message
+        if(!currentSession) {
+            currentSession = sessionManager.createSession(text);
+            const convEl = addSessionToSidebar(currentSession);
+            convEl.classList.add('active');
+        }
+        
+        addMessage('user', escapeHtml(text));
+        currentSession.addMessage(text, 'user');
+        
+        // Clear the input properly
+        inputEl.innerHTML = '';
+        
+        // Send to backend - pass the current session ID
+        startStreaming();
+        const response = await sendToBackend(text, currentSession.id);
+        
+        // Update the session ID if this is a new session
+        if (response.session_id && response.session_id !== currentSession.id) {
+            currentSession.id = response.session_id;
+            
+            // Update the session element in the sidebar
+            const convEl = document.querySelector(`.conv[data-session-id="${currentSession.id}"]`);
+            if (convEl) {
+                convEl.dataset.sessionId = response.session_id;
+            }
+        }
+        
+        finishStreaming(typeof response.reply === 'string' ? response.reply : JSON.stringify(response.reply));
+        currentSession.addMessage(response.reply, 'agent');
+        
+        // Save session
+        sessionManager.saveToStorage();
+    }
+
+    // button handlers
+    headerNewChatBtn.addEventListener('click', startNewChat);
+    sidebarNewChatBtn.addEventListener('click', startNewChat);
+    sendBtn.addEventListener('click', handleSend);
+
+    // keyboard handling: Enter send, Shift+Enter newline
+    inputEl.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey){
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
+    // Handle input changes to ensure proper clearing
+    inputEl.addEventListener('input', () => {
+        // This helps with contenteditable div issues
+        if (inputEl.innerText.trim() === '') {
+            inputEl.innerHTML = '';
+        }
+    });
+
+    // basic focus behavior
+    window.addEventListener('load', () => {
+        inputEl.focus();
+        
+        // Load existing sessions to sidebar
+        sessionManager.sessions.forEach(session => {
+            addSessionToSidebar(session);
+        });
+    });
+
+    // accessibility: announce new messages
+    const liveRegion = document.createElement('div'); 
+    liveRegion.setAttribute('aria-live','polite'); 
+    liveRegion.style.position='absolute'; 
+    liveRegion.style.left='-9999px'; 
+    document.body.appendChild(liveRegion);
+  </script>
+</body>
+</html>
