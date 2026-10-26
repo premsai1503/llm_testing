@@ -1,0 +1,43 @@
+Here is a conversational, structured script designed for a 3 to 4-minute delivery, structured so you can speak naturally without sounding memorized.
+Delivery Outline & Speaker Notes
+ * 0:00 – 0:45 | The Icebreaker & Connection
+   Establish an immediate connection as a recent senior; set a relaxed tone.
+ * 0:45 – 1:45 | The Shift: Classroom vs. Financial Reality
+   Discuss moving from campus projects to enterprise security, compliance, and engineering rigor.
+ * 1:45 – 2:45 | What I Actually Build & Continuous Learning
+   Introduce your work on agentic platforms and tech stacks, plus how the organization backs your growth through hackathons and learning platforms.
+ * 2:45 – 3:30 | Advice & Hand-off
+   Share realistic encouragement for current students, then hand the floor back to the main presenter.
+Speech Script
+[The Icebreaker & Campus Connect]
+"Hi everyone, it's great to be back here. For those who don’t know me, I’m Prem Sai. Not too long ago—just back in 2024—I was sitting right where you are, wrapping up my Integrated MTech in CSE.
+When the team mentioned we were visiting campus to talk about what we do, I immediately volunteered. Standing here on this side of the stage feels a little surreal, but it's an exciting opportunity to share what the transition into the industry actually looks like once you step out of college."
+[The Transition: Academic Code vs. Enterprise Reality]
+"I joined full-time right after graduation. Coming from CSE, you get used to writing code that works on your local machine, passing test cases, and submitting assignments. But stepping into a major financial institution completely changes your perspective on engineering.
+The biggest eye-opener for me wasn't just learning new syntax—it was realizing the scale, security, and compliance required behind every line of code. In college, if an API fails, you refresh and debug. In finance, millions of people depend on system integrity, so building secure, compliant, and highly reliable architecture becomes second nature. That mental shift from 'does this work?' to 'is this resilient, secure, and production-grade?' was huge for my growth."
+[Day-to-Day Impact & Continuous Upskilling]
+"On a day-to-day level, my work sits right at the intersection of AI/ML and software engineering. I work within Marketing Technology, specifically focusing on building an agentic platform using Python and JavaScript. Working with agentic workflows means solving problems that don't have straightforward, pre-existing blueprints—which keeps the work interesting.
+What helped smooth that steep learning curve was the company culture. From day one, there has been a strong emphasis on continuous upskilling. Whether it's access to top-tier learning resources or jumping into internal hackathons to experiment with emerging tech, you're constantly encouraged to explore, build, and fail fast in a supportive environment."
+[Takeaway & Hand-off]
+"If I had one takeaway to share from my transition so far, it’s this: don't worry about knowing every tool or framework before you graduate. The core software engineering fundamentals, system design principles, and curiosity you develop here are what will carry you through. Everything else can be learned on the job if you stay adaptable.
+I'm looking forward to catching up with some of you during Q&A or afterward. With that, let me hand it over to [Presenter's Name] to dive deeper into the technologies and impact we drive every day. Thank you!"
+Practical Delivery Tips
+ * Pacing: Aim for roughly 120–130 words per minute. Pause briefly after mentioning your graduation year and your main takeaway so those points land naturally.
+ * Eye Contact: Focus on the back and middle rows rather than looking down; it projects comfort and keeps the conversation personal.
+ * Flexibility: If the presenter's schedule runs behind, you can easily trim the hackathon/learning platform mention down to a single sentence without losing the core story.
+_----_
+Here is the revised speech with a more grounded opening, adjusted relevance for 1st and 2nd-year students, and a first-person perspective on engineering standards.
+Speech Script
+[Opening & Campus Connect]
+"Hi everyone, it's really good to be back. For those who don’t know me, I’m Prem Sai. Just back in 2024, I was sitting right where you are, doing my Integrated MTech in CSE.
+Standing on this side of the stage feels a bit surreal, but since you're in your first and second years, I wanted to give you a genuine glimpse of what actual software engineering looks like early in your career—beyond just exams and grades."
+[The Transition: Functional vs. Production Reality]
+"I joined the organization full-time right after graduation. Back when I was in your shoes building projects and college applications, I honestly thought satisfying the functional requirements was enough—if the button worked, the data loaded, and the test cases passed, the job was done.
+When I joined and actually started my work at a financial institution, my entire perspective changed. I realized that making something function is only the first step. The real engineering challenge is scale, security, and compliance. In finance, you can't just build a cool feature; you have to think about: What happens if an edge case breaks this? Is this data leak-proof? How does this hold up under heavy load? Shifting my mindset from 'does it run?' to 'is it secure and production-grade?' was probably the biggest technical leap I made."
+[Day-to-Day Work & Culture]
+"Today, my work sits right at the intersection of AI/ML and software engineering. I work in Marketing Technology, building an agentic platform using Python and JavaScript. It's an exciting space because agentic workflows are relatively new, so we're actively designing solutions for problems that don’t have standard textbook answers yet.
+You don't need to know everything on day one, either. What helped me ramp up was the team culture—there's a massive focus on continuous upskilling. Between internal learning platforms and regular hackathons, you’re constantly given room to experiment with emerging tech and pick up new skills quickly."
+[Advice & Hand-off]
+"Since most of you are early in your college journey, my biggest piece of advice is to focus on core fundamentals—data structures, clean coding, and understanding how systems talk to each other. Don’t worry about mastering every single trending framework right now; if your core concepts are solid, you can learn any stack on the job.
+I’m happy to chat more or answer any questions later. Now, let me hand it over to [Presenter's Name] to dive into the work and technologies driving the organization."
+
